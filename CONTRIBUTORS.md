@@ -162,8 +162,8 @@ By contributing to NutriSnap, you agree that your contributions will be licensed
 ## 📧 Contact
 
 - **Questions about contributing?** Open an issue or discussion
-- **Want to report a security issue?** Email: dev@nutrisnap.com
-- **General inquiries?** Contact: dev@nutrisnap.com
+- **Want to report a security issue?** Email: `88mustfa44@gmail.com`
+- **General inquiries?** Contact: `88mustfa44@gmail.com`
 
 ---
 
