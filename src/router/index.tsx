@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
@@ -19,8 +20,21 @@ import Settings      from '../pages/Settings';
 import Profile       from '../pages/Profile';
 import About         from '../pages/About';
 
+const LOADING_TIMEOUT = 10000;
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading } = useAuth();
+  const [showLoadingError, setShowLoadingError] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        setShowLoadingError(true);
+      }
+    }, LOADING_TIMEOUT);
+
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -29,13 +43,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
           <span className="text-xl">🥗</span>
         </div>
         <p className="text-sm text-muted-foreground animate-pulse">Loading NutriSnap…</p>
+        {showLoadingError && (
+          <p className="text-xs text-red-500 mt-4">Taking longer than expected. Please try <button onClick={() => window.location.reload()} className="underline hover:no-underline">refreshing</button>.</p>
+        )}
       </div>
     </div>
   );
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  // Check if user needs onboarding
   if (user && !user.onboarding_complete) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -52,6 +68,17 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 function OnboardingRoute({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, loading } = useAuth();
+  const [showLoadingError, setShowLoadingError] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        setShowLoadingError(true);
+      }
+    }, LOADING_TIMEOUT);
+
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -60,13 +87,15 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
           <span className="text-xl">🥗</span>
         </div>
         <p className="text-sm text-muted-foreground animate-pulse">Loading…</p>
+        {showLoadingError && (
+          <p className="text-xs text-red-500 mt-4">Taking longer than expected. Please try <button onClick={() => window.location.reload()} className="underline hover:no-underline">refreshing</button>.</p>
+        )}
       </div>
     </div>
   );
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  // If user has already completed onboarding, send to dashboard
   if (user?.onboarding_complete) {
     return <Navigate to="/dashboard" replace />;
   }
