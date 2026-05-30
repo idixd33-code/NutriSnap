@@ -297,8 +297,7 @@ All licenses comply with open-source standards. For complete license information
 
 **NutriSnap** was created as a demonstration of modern AI-assisted development using Bolt.new. 
 
-- **Architecture & Design**: Built with Bolt.new's Claude AI integration
-- **AI Development**: Leverages Claude AI for intelligent code generation
+- **Architecture & Design**: Built with Bolt.new's 
 - **UI/UX**: Modern design principles with React and TailwindCSS
 
 ### Special Thanks
