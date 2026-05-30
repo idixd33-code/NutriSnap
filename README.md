@@ -369,7 +369,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - **Repository**: [github.com/idixd33-code/NutriSnap](https://github.com/idixd33-code/NutriSnap)
 - **Developer**: [idixd33-code](https://github.com/idixd33-code)
 - **Built with**: [Bolt.new](https://bolt.new) - AI-Powered Development Platform
-- **AI Assistant**: Claude (Anthropic)
 - **Status**: Active Development 🚀
 - **Latest Update**: May 30, 2026
 
@@ -377,7 +376,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 For support, questions, or feedback:
 
-- 📧 **Email**: dev@nutrisnap.com
+- 📧 **Email**: `88mustfa44@gmail.com`
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/idixd33-code/NutriSnap/issues)
 - 💡 **Feature Requests**: [GitHub Discussions](https://github.com/idixd33-code/NutriSnap/discussions)
 - 🤝 **Partnerships**: Contact via GitHub or email
