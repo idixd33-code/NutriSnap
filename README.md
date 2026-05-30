@@ -12,7 +12,6 @@ A beautiful and intelligent nutrition tracking application that helps you monito
 
 This project was rapidly developed using **[Bolt.new](https://bolt.new)**, a revolutionary AI-powered web development platform that allows developers to build full-stack applications in seconds. Bolt.new combines:
 
-- **Claude AI Integration**: Intelligent code generation and problem-solving
 - **Real-time Preview**: Instant visual feedback as you build
 - **Full-Stack Setup**: Complete environment from frontend to backend configuration
 - **Rapid Development**: Weeks of work compressed into hours
@@ -91,8 +90,6 @@ This application exemplifies the power of AI-assisted development. Here's how **
 - **Traditional Development**: Would take 2-4 weeks with a full team
 - **Bolt.new Approach**: Completed in hours with AI assistance
 - **Quality**: Enterprise-grade code with best practices
-
-> **The Bolt.new Advantage**: Instead of spending weeks on boilerplate setup, debugging configuration, and context-switching between different tools, developers can focus on business logic and user experience. Claude AI handles the technical complexity!
 
 ---
 
