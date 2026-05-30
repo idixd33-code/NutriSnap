@@ -14,9 +14,11 @@ function readCache(): FoodCache {
     return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
   } catch { return {}; }
 }
+
 function writeCache(cache: FoodCache) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch {}
 }
+
 function getCached(key: string): FoodItem[] | null {
   const cache = readCache();
   const entry = cache[key];
@@ -24,6 +26,7 @@ function getCached(key: string): FoodItem[] | null {
   if (Date.now() - entry.timestamp > CACHE_TTL_MS) return null;
   return entry.data;
 }
+
 function setCache(key: string, data: FoodItem[]) {
   const cache = readCache();
   cache[key] = { data, timestamp: Date.now() };
@@ -215,184 +218,6 @@ export async function searchFood(query: string): Promise<FoodItem[]> {
   }
 
   if (results.length > 0) setCache(key, results);
-  return results;
-}
-
-// ─── Get food details by USDA FDC ID ────────────────────────────────────────
-export async function getFoodDetails(fdcId: string): Promise<FoodItem | null> {
-  const key = `detail_${fdcId}`;
-  const cached = getCached(key);
-  if (cached?.[0]) return cached[0];
-
-  try {
-    const res = await fetch(`${USDA_BASE}/food/${fdcId}?api_key=${USDA_KEY}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const item = normalizeUSDA(data);
-    setCache(key, [item]);
-    return item;
-  } catch { return null; }
-}
-
-// ─── Clear food cache ────────────────────────────────────────────────────────
-export function clearFoodCache() {
-  localStorage.removeItem(CACHE_KEY);
-}
-
-
-const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1';
-const OFF_BASE  = 'https://world.openfoodfacts.org/cgi/search.pl';
-const USDA_KEY  = import.meta.env.VITE_USDA_API_KEY || 'DEMO_KEY';
-
-const CACHE_KEY = 'nutrisnap_food_cache';
-
-// ─── Cache helpers ──────────────────────────────────────────────────────────
-function readCache(): FoodCache {
-  try {
-    return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
-  } catch { return {}; }
-}
-function writeCache(cache: FoodCache) {
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch {}
-}
-function getCached(key: string): FoodItem[] | null {
-  const cache = readCache();
-  const entry = cache[key];
-  if (!entry) return null;
-  if (Date.now() - entry.timestamp > CACHE_TTL_MS) return null;
-  return entry.data;
-}
-function setCache(key: string, data: FoodItem[]) {
-  const cache = readCache();
-  cache[key] = { data, timestamp: Date.now() };
-  // Limit cache to 100 entries
-  const keys = Object.keys(cache);
-  if (keys.length > 100) delete cache[keys[0]];
-  writeCache(cache);
-}
-
-// ─── USDA normalizer ────────────────────────────────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeUSDA(item: any): FoodItem {
-  const nutrients = item.foodNutrients || [];
-  const get = (id: number) => {
-    const n = nutrients.find((n: any) => n.nutrientId === id || n.nutrient?.id === id);
-    return n?.value ?? n?.amount ?? 0;
-  };
-  const cal     = get(1008) || get(2048) || 0;
-  const protein = get(1003) || 0;
-  const fat     = get(1004) || 0;
-  const carbs   = get(1005) || 0;
-
-  return {
-    id:    `usda_${item.fdcId}`,
-    name:  item.description || 'Unknown Food',
-    brand: item.brandOwner || item.brandName,
-    source: 'usda',
-    serving_size: item.servingSize || 100,
-    serving_unit: item.servingSizeUnit || 'g',
-    nutrition_per_100g: { calories: cal, protein, carbs, fat },
-    nutrition_per_serving: {
-      calories: +(cal * (item.servingSize || 100) / 100).toFixed(1),
-      protein:  +(protein * (item.servingSize || 100) / 100).toFixed(1),
-      carbs:    +(carbs   * (item.servingSize || 100) / 100).toFixed(1),
-      fat:      +(fat     * (item.servingSize || 100) / 100).toFixed(1),
-    },
-    category: item.foodCategory?.description,
-  };
-}
-
-// ─── Open Food Facts normalizer ─────────────────────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeOFF(item: any): FoodItem {
-  const n = item.nutriments || {};
-  const servingSize = item.serving_quantity ? parseFloat(item.serving_quantity) : 100;
-  const cal     = n['energy-kcal_100g'] || n['energy-kcal'] || 0;
-  const protein = n['proteins_100g']    || n['proteins']    || 0;
-  const carbs   = n['carbohydrates_100g'] || n['carbohydrates'] || 0;
-  const fat     = n['fat_100g']          || n['fat']          || 0;
-
-  return {
-    id:    `off_${item.code || item._id}`,
-    name:  item.product_name || item.product_name_en || 'Unknown Food',
-    brand: item.brands,
-    source: 'openfoodfacts',
-    serving_size: servingSize,
-    serving_unit: item.serving_size?.replace(/[0-9.]/g, '').trim() || 'g',
-    nutrition_per_100g: { calories: cal, protein, carbs, fat },
-    nutrition_per_serving: {
-      calories: +(cal * servingSize / 100).toFixed(1),
-      protein:  +(protein  * servingSize / 100).toFixed(1),
-      carbs:    +(carbs    * servingSize / 100).toFixed(1),
-      fat:      +(fat      * servingSize / 100).toFixed(1),
-    },
-    image_url: item.image_front_thumb_url || item.image_url,
-    barcode:   item.code,
-  };
-}
-
-// ─── USDA search ────────────────────────────────────────────────────────────
-async function searchUSDA(query: string): Promise<FoodItem[]> {
-  const res = await fetch(
-    `${USDA_BASE}/foods/search?query=${encodeURIComponent(query)}&pageSize=20&api_key=${USDA_KEY}`
-  );
-  if (!res.ok) throw new Error('USDA search failed');
-  const data = await res.json();
-  return (data.foods || []).map(normalizeUSDA);
-}
-
-// ─── Open Food Facts search ─────────────────────────────────────────────────
-async function searchOFF(query: string): Promise<FoodItem[]> {
-  const params = new URLSearchParams({
-    search_terms: query,
-    search_simple: '1',
-    action: 'process',
-    json: '1',
-    page_size: '20',
-    fields: 'code,product_name,product_name_en,brands,nutriments,serving_quantity,serving_size,image_front_thumb_url',
-  });
-  const res = await fetch(`${OFF_BASE}?${params}`);
-  if (!res.ok) throw new Error('OpenFoodFacts search failed');
-  const data = await res.json();
-  return (data.products || [])
-    .filter((p: any) => p.product_name || p.product_name_en)
-    .map(normalizeOFF);
-}
-
-// ─── Unified search with cache + fallback ───────────────────────────────────
-export async function searchFood(query: string): Promise<FoodItem[]> {
-  if (!query.trim()) return [];
-  const key = `search_${query.toLowerCase().trim()}`;
-
-  const cached = getCached(key);
-  if (cached) return cached;
-
-  let results: FoodItem[] = [];
-
-  try {
-    results = await searchUSDA(query);
-  } catch {
-    // USDA failed — try Open Food Facts
-    try {
-      results = await searchOFF(query);
-    } catch {
-      return [];
-    }
-  }
-
-  // If USDA returned very few results, supplement with OFF
-  if (results.length < 5) {
-    try {
-      const offResults = await searchOFF(query);
-      const combined = [...results, ...offResults];
-      const unique = combined.filter((item, idx, arr) =>
-        arr.findIndex(i => i.name.toLowerCase() === item.name.toLowerCase()) === idx
-      );
-      results = unique;
-    } catch {}
-  }
-
-  setCache(key, results);
   return results;
 }
 

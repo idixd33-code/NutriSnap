@@ -57,7 +57,7 @@ export default function Profile() {
 
 function AchievementCard({ icon: Icon, title, desc, unlocked, color, bg }: any) {
   return (
-    <div className={`card p-4 flex flex-col items-center text-center gap-3 transition-all ${unlocked ? '' : 'opacity-50 grayscale'}`}>
+    <div className={`card p-4 flex flex-col items-center text-center gap-3 transition-all relative ${unlocked ? '' : 'opacity-50 grayscale'}`}>
       <div className={`w-12 h-12 rounded-full ${bg} dark:bg-surface-800 flex items-center justify-center`}>
         <Icon className={`w-6 h-6 ${color}`} />
       </div>

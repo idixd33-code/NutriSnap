@@ -1,13 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import { useUIStore } from '../../stores/uiStore';
 import { cn } from '../../lib/utils';
-import { LayoutDashboard, Utensils, Search, Target, PieChart, Droplets, Settings, LogOut, ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import { LayoutDashboard, Utensils, Search, Target, ChartPie as PieChart, Droplets, Settings, LogOut, ChevronLeft, ChevronRight, Info, BookOpen } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/meals', label: 'Meals', icon: Utensils },
   { path: '/food-search', label: 'Search', icon: Search },
+  { path: '/food-library', label: 'Food Library', icon: BookOpen },
   { path: '/goals', label: 'Goals', icon: Target },
   { path: '/analytics', label: 'Analytics', icon: PieChart },
   { path: '/water', label: 'Water', icon: Droplets },

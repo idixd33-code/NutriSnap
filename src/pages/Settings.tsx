@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
-import { LogOut, User, Moon, Sun, Monitor, Bell } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { LogOut, User, Moon, Sun, Monitor, Bell, Loader as Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function Settings() {
@@ -11,11 +12,41 @@ export default function Settings() {
   const { theme, setTheme } = useUIStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(user?.full_name || '');
+  const [saving, setSaving] = useState(false);
+  const [notifications, setNotifications] = useState(true);
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (!user) return;
-    setUser({ ...user, full_name: editName });
-    setIsEditing(false);
+    setSaving(true);
+    try {
+      await supabase
+        .from('profiles')
+        .update({ full_name: editName })
+        .eq('id', user.id);
+      setUser({ ...user, full_name: editName });
+      setIsEditing(false);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleThemeChange = async (newTheme: 'light' | 'dark' | 'system') => {
+    setTheme(newTheme);
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ theme: newTheme })
+        .eq('id', user.id);
+    }
+  };
+
+  const handleNotificationsToggle = async () => {
+    const newValue = !notifications;
+    setNotifications(newValue);
+    // Note: Notification preferences would need a column in the database
+    // For now, we just toggle the UI state
   };
 
   return (
@@ -26,7 +57,7 @@ export default function Settings() {
       </div>
 
       <div className="flex flex-col gap-6">
-        
+
         {/* Profile Card */}
         <div className="card p-6">
           <h3 className="section-title mb-4 flex items-center gap-2"><User className="w-5 h-5" /> Profile</h3>
@@ -41,14 +72,16 @@ export default function Settings() {
             <div className="flex-1">
               {isEditing ? (
                 <div className="flex flex-col gap-2">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="input-base py-1.5 px-3"
                   />
                   <div className="flex gap-2">
-                    <button onClick={handleSaveProfile} className="btn-primary py-1 px-3 text-xs">Save</button>
+                    <button onClick={handleSaveProfile} disabled={saving} className="btn-primary py-1 px-3 text-xs">
+                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
+                    </button>
                     <button onClick={() => setIsEditing(false)} className="btn-secondary py-1 px-3 text-xs">Cancel</button>
                   </div>
                 </div>
@@ -70,7 +103,7 @@ export default function Settings() {
         {/* Preferences */}
         <div className="card p-6">
           <h3 className="section-title mb-6 flex items-center gap-2"><Monitor className="w-5 h-5" /> Preferences</h3>
-          
+
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
               <div>
@@ -81,7 +114,7 @@ export default function Settings() {
                 {(['light', 'dark', 'system'] as const).map(t => (
                   <button
                     key={t}
-                    onClick={() => setTheme(t)}
+                    onClick={() => handleThemeChange(t)}
                     className={cn(
                       "px-3 py-1.5 rounded-lg text-sm font-medium capitalize flex items-center gap-2 transition-all",
                       theme === t ? "bg-white dark:bg-surface-600 shadow-sm" : "text-muted-foreground hover:text-foreground"
@@ -103,8 +136,19 @@ export default function Settings() {
                 <h4 className="font-semibold text-sm">Notifications</h4>
                 <p className="text-xs text-muted-foreground">Daily reminders and insights</p>
               </div>
-              <button className="w-12 h-6 bg-emerald-500 rounded-full relative transition-colors">
-                <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full transition-transform" />
+              <button
+                onClick={handleNotificationsToggle}
+                className={cn(
+                  "w-12 h-6 rounded-full relative transition-colors",
+                  notifications ? "bg-emerald-500" : "bg-surface-300 dark:bg-surface-700"
+                )}
+              >
+                <span
+                  className={cn(
+                    "absolute top-1 w-4 h-4 bg-white rounded-full transition-transform",
+                    notifications ? "right-1" : "left-1"
+                  )}
+                />
               </button>
             </div>
           </div>
@@ -113,7 +157,7 @@ export default function Settings() {
         {/* Danger Zone */}
         <div className="card p-6 border-red-100 dark:border-red-900/30">
           <h3 className="section-title text-red-500 mb-4">Account</h3>
-          <button 
+          <button
             onClick={signOut}
             className="flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-semibold text-sm"
           >
