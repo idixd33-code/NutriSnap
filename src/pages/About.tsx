@@ -1,4 +1,4 @@
-import { ExternalLink, Mail, Code2, Zap, Heart, Shield, Cpu, Globe, Sparkles, Star } from 'lucide-react';
+import { ExternalLink, Mail, Code as Code2, Zap, Heart, Shield, Cpu, Globe, Sparkles, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const TECH_STACK = [
@@ -49,7 +49,7 @@ export default function About() {
           {/* Version Badge */}
           <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30">
             <Sparkles className="w-4 h-4 text-emerald-500" />
-            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Version 2.0 — 2025</span>
+            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Version 2.0 — 2026</span>
           </div>
         </div>
       </div>
@@ -180,7 +180,7 @@ export default function About() {
         </h2>
         <div className="flex flex-col gap-4 text-sm text-muted-foreground leading-relaxed">
           <p>
-            <span className="font-bold text-foreground">© 2025 NutriSnap.</span> All rights reserved. Unauthorized reproduction or distribution of any part of this application is prohibited.
+            <span className="font-bold text-foreground">© 2026 NutriSnap.</span> All rights reserved. Unauthorized reproduction or distribution of any part of this application is prohibited.
           </p>
           <p>
             <span className="font-bold text-foreground">Built with Bolt.new:</span> This application was entirely designed and developed using{' '}
